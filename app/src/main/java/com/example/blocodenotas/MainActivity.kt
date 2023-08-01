@@ -2,6 +2,7 @@ package com.example.blocodenotas
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -14,12 +15,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.blocodenotas.datastore.Anotacao
 import com.example.blocodenotas.ui.theme.BlocoDeNotasTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,8 +39,14 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun Main() {
+
+    val context = LocalContext.current
+    val storeAnotacao = Anotacao(context)
+    val anotacaoSalva = storeAnotacao.getAnotacao.collectAsState(initial = "")
+    val scope = rememberCoroutineScope()
     var anotacao by remember{ mutableStateOf("") }
 
+    anotacao = anotacaoSalva.value.toString()
 
     Scaffold(
         topBar = { // começo da topbar
@@ -50,7 +60,10 @@ fun Main() {
 
         floatingActionButton = {
             FloatingActionButton(onClick = {
-
+                scope.launch {
+                    storeAnotacao.salvarAnotacao(anotacao)
+                    Toast.makeText(context,"Anotação salva.",Toast.LENGTH_SHORT).show()
+                }
             },
                 backgroundColor = Color(0xFFFFC003),
                 elevation = FloatingActionButtonDefaults.elevation(
